@@ -78,6 +78,35 @@ code {
   max-width: 300px;
   max-height: 90vh;
   overflow-y: auto;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+/* Mobil cihazlar için sensör kontrol paneli */
+.control-panel.mobile-collapsed {
+  transform: translateX(calc(100% - 45px));
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.control-panel-toggle {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 10;
+  transition: transform 0.3s ease;
+}
+
+.control-panel-toggle.open {
+  transform: rotate(180deg);
 }
 
 .time-control {
@@ -165,4 +194,70 @@ code {
   margin-bottom: 15px;
   font-size: 1.2rem;
   font-weight: 500;
+}
+
+/* Media queries - Mobil uyumluluk için ekstra stiller */
+@media (max-width: 768px) {
+  /* Kontrol paneli mobil */
+  .control-panel {
+    width: 85%;
+    max-width: 300px;
+    right: 0;
+    top: 60px;
+    border-radius: 8px 0 0 8px;
+  }
+  
+  /* Şehir seçici */
+  .city-selector {
+    width: 100%;
+    padding: 5px !important;
+  }
+  
+  .city-selector button {
+    padding: 5px 10px !important;
+    font-size: 0.85rem !important;
+    min-width: auto !important;
+  }
+  
+  /* Zaman kontrolü */
+  .time-control {
+    width: 90%;
+    padding: 10px !important;
+    bottom: 10px;
+  }
+  
+  /* Detaylı bilgi butonu */
+  .info-button-container {
+    right: 10px !important;
+    top: 10px !important;
+  }
+  
+  .info-button-container button {
+    padding: 8px 12px !important;
+    font-size: 0.85rem !important;
+  }
+  
+  /* Popup içeriği */
+  .anomaly-info {
+    max-width: 200px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Daha küçük ekranlar için ek ayarlamalar */
+  .control-panel {
+    width: 90%;
+    top: 50px;
+  }
+  
+  .time-control {
+    width: 95%;
+    padding: 8px !important;
+    bottom: 5px;
+  }
+  
+  .city-selector button {
+    padding: 3px 8px !important;
+    font-size: 0.8rem !important;
+  }
 } 

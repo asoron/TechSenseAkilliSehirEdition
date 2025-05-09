@@ -189,7 +189,7 @@ const DetailedInfoSelector = ({ map, onSelection, onCancelSelection }) => {
   return null;
 };
 
-const DetailedInfoButton = ({ filteredData, availableSensors, activeSensors, sensorStatistics }) => {
+const DetailedInfoButton = ({ filteredData, availableSensors, activeSensors, sensorStatistics, isMobile }) => {
   const { sensorData } = useContext(DataContext);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedArea, setSelectedArea] = useState(null);
@@ -599,14 +599,15 @@ const DetailedInfoButton = ({ filteredData, availableSensors, activeSensors, sen
   return (
     <>
       <Box
+        className="info-button-container"
         sx={{
           position: 'absolute',
-          top: 20,  // 200'den 20'ye değiştirildi - en üst sağ köşeye taşındı
-          right: 20,
+          top: isMobile ? 10 : 20,  
+          right: isMobile ? 10 : 20,
           zIndex: 1000,
           display: 'flex',
           flexDirection: 'column',
-          gap: 2  // Butonlar arası boşluğu artırdık
+          gap: 2
         }}
       >
         <Button
@@ -618,10 +619,11 @@ const DetailedInfoButton = ({ filteredData, availableSensors, activeSensors, sen
             borderRadius: 2,
             boxShadow: 3,
             fontWeight: 'bold',
-            padding: '10px 15px'
+            padding: isMobile ? '8px 12px' : '10px 15px',
+            fontSize: isMobile ? '0.8rem' : 'inherit'
           }}
         >
-          {selectionMode ? "Seçim Modu Aktif" : "Detaylı Bilgi"}
+          {selectionMode ? (isMobile ? "Seçim Modu" : "Seçim Modu Aktif") : "Detaylı Bilgi"}
         </Button>
         
         {selectionMode && (
@@ -633,7 +635,8 @@ const DetailedInfoButton = ({ filteredData, availableSensors, activeSensors, sen
               borderRadius: 2,
               boxShadow: 3,
               fontWeight: 'bold',
-              padding: '10px 15px'
+              padding: isMobile ? '8px 12px' : '10px 15px',
+              fontSize: isMobile ? '0.8rem' : 'inherit'
             }}
           >
             İptal Et
@@ -656,13 +659,35 @@ const DetailedInfoButton = ({ filteredData, availableSensors, activeSensors, sen
         onClose={handleCloseDialog}
         maxWidth="lg"
         fullWidth
+        sx={{
+          '& .MuiDialog-paper': {
+            width: isMobile ? '95%' : 'auto',
+            maxHeight: isMobile ? '90vh' : 'auto',
+            margin: isMobile ? '10px' : 'auto'
+          }
+        }}
       >
-        <DialogTitle sx={{ backgroundColor: '#f5f5f5', fontWeight: 'bold' }}>
-          Seçilen Alan Detaylı Analizi - Saat: {selectedHour}:00
+        <DialogTitle 
+          sx={{ 
+            backgroundColor: '#f5f5f5', 
+            fontWeight: 'bold',
+            fontSize: isMobile ? '1rem' : 'inherit',
+            padding: isMobile ? '12px 16px' : '16px 24px'
+          }}
+        >
+          Seçilen Alan Analizi - {selectedHour}:00
         </DialogTitle>
-        <DialogContent dividers>
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="h6" gutterBottom>
+        <DialogContent 
+          dividers
+          sx={{
+            padding: isMobile ? '12px' : '16px 24px'
+          }}
+        >
+          <Box sx={{ mb: isMobile ? 2 : 3 }}>
+            <Typography 
+              variant={isMobile ? "subtitle1" : "h6"} 
+              gutterBottom
+            >
               {areaData.points.length} veri noktası ve {areaData.devices.length} cihaz bulundu
             </Typography>
             
@@ -672,9 +697,11 @@ const DetailedInfoButton = ({ filteredData, availableSensors, activeSensors, sen
               </Typography>
             )}
 
-            <Typography variant="body2" color="primary.dark" sx={{ mt: 1, fontSize: '0.85rem' }}>
-              * Sekmeler arasında geçiş yaparak seçili saat veya tüm saatlerin analizini görüntüleyebilirsiniz
-            </Typography>
+            {!isMobile && (
+              <Typography variant="body2" color="primary.dark" sx={{ mt: 1, fontSize: '0.85rem' }}>
+                * Sekmeler arasında geçiş yaparak seçili saat veya tüm saatlerin analizini görüntüleyebilirsiniz
+              </Typography>
+            )}
           </Box>
           
           {activeSensors.length === 0 ? (
@@ -684,9 +711,21 @@ const DetailedInfoButton = ({ filteredData, availableSensors, activeSensors, sen
           ) : (
             <Box sx={{ width: '100%' }}>
               <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <Tabs value={tabValue} onChange={handleTabChange} variant="scrollable" scrollButtons="auto">
-                  <Tab icon={<AccessTimeIcon />} label="Seçili Saat Analizi" id="tab-0" />
-                  <Tab icon={<DeviceHubIcon />} label="Tüm Saatler Analizi" id="tab-1" />
+                <Tabs 
+                  value={tabValue} 
+                  onChange={handleTabChange} 
+                  variant="scrollable" 
+                  scrollButtons={isMobile ? "auto" : "auto"}
+                  sx={{
+                    '& .MuiTab-root': {
+                      fontSize: isMobile ? '0.75rem' : 'inherit',
+                      minWidth: isMobile ? '120px' : '160px',
+                      padding: isMobile ? '8px' : '12px 16px'
+                    }
+                  }}
+                >
+                  <Tab icon={<AccessTimeIcon fontSize={isMobile ? "small" : "medium"} />} label={isMobile ? "Seçili Saat" : "Seçili Saat Analizi"} id="tab-0" />
+                  <Tab icon={<DeviceHubIcon fontSize={isMobile ? "small" : "medium"} />} label={isMobile ? "Tüm Saatler" : "Tüm Saatler Analizi"} id="tab-1" />
                 </Tabs>
               </Box>
               
@@ -1189,12 +1228,24 @@ const DetailedInfoButton = ({ filteredData, availableSensors, activeSensors, sen
             </Box>
           )}
           
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 3, fontStyle: 'italic' }}>
+          <Typography 
+            variant="body2" 
+            color="text.secondary" 
+            sx={{ 
+              mt: isMobile ? 2 : 3, 
+              fontStyle: 'italic',
+              fontSize: isMobile ? '0.75rem' : 'inherit'
+            }}
+          >
             * Veriler, seçilen bölgedeki tüm sensör ve ölçüm noktalarından alınmıştır.
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDialog} color="primary">
+          <Button 
+            onClick={handleCloseDialog} 
+            color="primary"
+            size={isMobile ? "small" : "medium"}
+          >
             Kapat
           </Button>
         </DialogActions>

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { 
   FormGroup, 
   FormControlLabel, 
@@ -9,10 +9,15 @@ import {
   IconButton,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  Box,
+  useMediaQuery
 } from '@mui/material';
 import InfoIcon from '@mui/icons-material/Info';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import MenuIcon from '@mui/icons-material/Menu';
+import CloseIcon from '@mui/icons-material/Close';
+import LayersIcon from '@mui/icons-material/Layers';
 
 // Sensörleri kategorilere ayırmak için yardımcı fonksiyon
 const getSensorCategory = (sensorId) => {
@@ -119,6 +124,22 @@ const SensorLayerControl = ({
   onToggleSensor,
   sensorStatistics
 }) => {
+  // Mobil görünüm kontrolü için state
+  const [isOpen, setIsOpen] = useState(true);
+  const isMobile = useMediaQuery('(max-width:768px)');
+  
+  // Mobil cihazda otomatik olarak kapalı başla
+  useEffect(() => {
+    if (isMobile) {
+      setIsOpen(false);
+    }
+  }, [isMobile]);
+  
+  // Panel görünürlüğünü aç/kapat
+  const togglePanel = () => {
+    setIsOpen(!isOpen);
+  };
+  
   // Tekrarlanan sensörleri temizle ve grupla
   const uniqueSensors = useMemo(() => {
     const sensorMap = new Map();
@@ -166,133 +187,168 @@ const SensorLayerControl = ({
   });
   
   return (
-    <div className="control-panel" style={{
-      position: 'absolute',
-      top: 80, // Detaylı Bilgi butonunun altına yerleştiriyoruz
-      right: 20,
-      width: '300px',
-      backgroundColor: 'rgba(255, 255, 255, 0.9)',
-      padding: '15px',
-      borderRadius: '8px',
-      boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
-      maxHeight: 'calc(100vh - 100px)',
-      overflowY: 'auto',
-      zIndex: 900 // DetailedInfoButton'dan düşük bir z-index
-    }}>
-      <Typography variant="h6" className="layer-heading">
-        Sensör Veri Katmanları
-      </Typography>
-      <Divider sx={{ mb: 2 }} />
+    <>
+      {/* Sensör paneli açma/kapama butonu - sadece mobil görünümde */}
+      {isMobile && (
+        <IconButton 
+          className={`control-panel-toggle ${isOpen ? 'open' : ''}`}
+          onClick={togglePanel}
+          sx={{
+            position: 'absolute',
+            top: '60px',
+            right: isOpen ? '310px' : '10px',
+            zIndex: 1001,
+            backgroundColor: 'white',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+            transition: 'right 0.3s ease',
+          }}
+        >
+          {isOpen ? <CloseIcon /> : <LayersIcon />}
+        </IconButton>
+      )}
       
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="subtitle1">Hava Kalitesi</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <FormGroup>
-            {categorizedSensors.air.map(sensor => (
-              <div key={sensor.id} className="layer-toggle">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={activeSensors.includes(sensor.id)}
-                      onChange={() => onToggleSensor(sensor.id)}
-                      color="primary"
-                    />
-                  }
-                  label={sensor.name}
-                />
-                <Tooltip 
-                  title={
-                    sensorStatistics[sensor.id] 
-                      ? `Aralık: ${sensorStatistics[sensor.id].overall.min.toFixed(1)} - ${sensorStatistics[sensor.id].overall.max.toFixed(1)} ${sensor.unit}` 
-                      : `${sensor.name} için veri bulunamadı`
-                  }
-                >
-                  <IconButton size="small">
-                    <InfoIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            ))}
-          </FormGroup>
-        </AccordionDetails>
-      </Accordion>
-      
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="subtitle1">Çevresel Koşullar</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <FormGroup>
-            {categorizedSensors.environment.map(sensor => (
-              <div key={sensor.id} className="layer-toggle">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={activeSensors.includes(sensor.id)}
-                      onChange={() => onToggleSensor(sensor.id)}
-                      color="primary"
-                    />
-                  }
-                  label={sensor.name}
-                />
-                <Tooltip 
-                  title={
-                    sensorStatistics[sensor.id] 
-                      ? `Aralık: ${sensorStatistics[sensor.id].overall.min.toFixed(1)} - ${sensorStatistics[sensor.id].overall.max.toFixed(1)} ${sensor.unit}` 
-                      : `${sensor.name} için veri bulunamadı`
-                  }
-                >
-                  <IconButton size="small">
-                    <InfoIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            ))}
-          </FormGroup>
-        </AccordionDetails>
-      </Accordion>
-      
-      <Accordion defaultExpanded>
-        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="subtitle1">Diğer Ölçümler</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <FormGroup>
-            {categorizedSensors.other.map(sensor => (
-              <div key={sensor.id} className="layer-toggle">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={activeSensors.includes(sensor.id)}
-                      onChange={() => onToggleSensor(sensor.id)}
-                      color="primary"
-                    />
-                  }
-                  label={sensor.name}
-                />
-                <Tooltip 
-                  title={
-                    sensorStatistics[sensor.id] 
-                      ? `Aralık: ${sensorStatistics[sensor.id].overall.min.toFixed(1)} - ${sensorStatistics[sensor.id].overall.max.toFixed(1)} ${sensor.unit}` 
-                      : `${sensor.name} için veri bulunamadı`
-                  }
-                >
-                  <IconButton size="small">
-                    <InfoIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </div>
-            ))}
-          </FormGroup>
-        </AccordionDetails>
-      </Accordion>
-      
-      <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'text.secondary' }}>
-        Görüntülemek istediğiniz sensör katmanlarını seçin. Anormal değerler içeren bölgeler daha yoğun renklerle vurgulanmaktadır.
-      </Typography>
-    </div>
+      <div 
+        className={`control-panel ${isMobile && !isOpen ? 'mobile-collapsed' : ''}`} 
+        style={{
+          position: 'absolute',
+          top: isMobile ? '60px' : '80px',
+          right: '20px',
+          width: isMobile ? '280px' : '300px',
+          backgroundColor: 'rgba(255, 255, 255, 0.9)',
+          padding: '15px',
+          borderRadius: isMobile ? '8px 0 0 8px' : '8px',
+          boxShadow: '0 2px 10px rgba(0, 0, 0, 0.1)',
+          maxHeight: 'calc(100vh - 100px)',
+          overflowY: 'auto',
+          zIndex: 900,
+          transition: 'transform 0.3s ease'
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Typography variant="h6" className="layer-heading" sx={{ mb: 0 }}>
+            Sensör Veri Katmanları
+          </Typography>
+          
+          {/* Sadece desktop görünümde kapama butonu */}
+          {!isMobile && (
+            <IconButton size="small" onClick={togglePanel}>
+              {isOpen ? <CloseIcon fontSize="small" /> : <MenuIcon fontSize="small" />}
+            </IconButton>
+          )}
+        </Box>
+        
+        <Divider sx={{ mb: 2 }} />
+        
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1">Hava Kalitesi</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <FormGroup>
+              {categorizedSensors.air.map(sensor => (
+                <div key={sensor.id} className="layer-toggle">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={activeSensors.includes(sensor.id)}
+                        onChange={() => onToggleSensor(sensor.id)}
+                        color="primary"
+                      />
+                    }
+                    label={sensor.name}
+                  />
+                  <Tooltip 
+                    title={
+                      sensorStatistics[sensor.id] 
+                        ? `Aralık: ${sensorStatistics[sensor.id].overall.min.toFixed(1)} - ${sensorStatistics[sensor.id].overall.max.toFixed(1)} ${sensor.unit}` 
+                        : `${sensor.name} için veri bulunamadı`
+                    }
+                  >
+                    <IconButton size="small">
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              ))}
+            </FormGroup>
+          </AccordionDetails>
+        </Accordion>
+        
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1">Çevresel Koşullar</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <FormGroup>
+              {categorizedSensors.environment.map(sensor => (
+                <div key={sensor.id} className="layer-toggle">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={activeSensors.includes(sensor.id)}
+                        onChange={() => onToggleSensor(sensor.id)}
+                        color="primary"
+                      />
+                    }
+                    label={sensor.name}
+                  />
+                  <Tooltip 
+                    title={
+                      sensorStatistics[sensor.id] 
+                        ? `Aralık: ${sensorStatistics[sensor.id].overall.min.toFixed(1)} - ${sensorStatistics[sensor.id].overall.max.toFixed(1)} ${sensor.unit}` 
+                        : `${sensor.name} için veri bulunamadı`
+                    }
+                  >
+                    <IconButton size="small">
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              ))}
+            </FormGroup>
+          </AccordionDetails>
+        </Accordion>
+        
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Typography variant="subtitle1">Diğer Ölçümler</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            <FormGroup>
+              {categorizedSensors.other.map(sensor => (
+                <div key={sensor.id} className="layer-toggle">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={activeSensors.includes(sensor.id)}
+                        onChange={() => onToggleSensor(sensor.id)}
+                        color="primary"
+                      />
+                    }
+                    label={sensor.name}
+                  />
+                  <Tooltip 
+                    title={
+                      sensorStatistics[sensor.id] 
+                        ? `Aralık: ${sensorStatistics[sensor.id].overall.min.toFixed(1)} - ${sensorStatistics[sensor.id].overall.max.toFixed(1)} ${sensor.unit}` 
+                        : `${sensor.name} için veri bulunamadı`
+                    }
+                  >
+                    <IconButton size="small">
+                      <InfoIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
+                </div>
+              ))}
+            </FormGroup>
+          </AccordionDetails>
+        </Accordion>
+        
+        <Typography variant="caption" sx={{ mt: 2, display: 'block', color: 'text.secondary' }}>
+          Görüntülemek istediğiniz sensör katmanlarını seçin. Anormal değerler içeren bölgeler daha yoğun renklerle vurgulanmaktadır.
+        </Typography>
+      </div>
+    </>
   );
 };
 

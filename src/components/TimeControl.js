@@ -4,7 +4,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EditIcon from '@mui/icons-material/Edit';
 import { formatHourString, formatTimeString, timeToSliderValue, sliderValueToTime } from '../utils/dataUtils';
 
-const TimeControl = ({ selectedHour, selectedMinute = 0, onHourChange, onMinuteChange }) => {
+const TimeControl = ({ selectedHour, selectedMinute = 0, onHourChange, onMinuteChange, isMobile = false }) => {
   // Convert hour and minute to a single slider value
   const [sliderValue, setSliderValue] = useState(timeToSliderValue(selectedHour, selectedMinute));
   // State for manual time input
@@ -12,14 +12,20 @@ const TimeControl = ({ selectedHour, selectedMinute = 0, onHourChange, onMinuteC
   const [timeInput, setTimeInput] = useState(formatTimeString(selectedHour, selectedMinute));
   const timeInputRef = useRef(null);
 
-  // Kaydırıcı için işaretleri formatla
-  const marks = [
-    { value: 0, label: '00:00' },
-    { value: 360, label: '06:00' },
-    { value: 720, label: '12:00' },
-    { value: 1080, label: '18:00' },
-    { value: 1380, label: '23:00' }
-  ];
+  // Kaydırıcı için işaretleri formatla - mobil cihazlarda daha az işaret göster
+  const marks = isMobile 
+    ? [
+        { value: 0, label: '00:00' },
+        { value: 720, label: '12:00' },
+        { value: 1380, label: '23:00' }
+      ]
+    : [
+        { value: 0, label: '00:00' },
+        { value: 360, label: '06:00' },
+        { value: 720, label: '12:00' },
+        { value: 1080, label: '18:00' },
+        { value: 1380, label: '23:00' }
+      ];
 
   // Update slider value when hour or minute changes from props
   useEffect(() => {
@@ -105,13 +111,13 @@ const TimeControl = ({ selectedHour, selectedMinute = 0, onHourChange, onMinuteC
       className="time-control" 
       sx={{ 
         position: 'absolute', 
-        bottom: 20, 
+        bottom: isMobile ? 10 : 20, 
         left: '50%', 
         transform: 'translateX(-50%)',
-        padding: 2,
+        padding: isMobile ? 1 : 2,
         borderRadius: 2,
-        width: 'auto',
-        minWidth: 350,
+        width: isMobile ? '95%' : 'auto',
+        minWidth: isMobile ? 'auto' : 350,
         backgroundColor: 'rgba(255, 255, 255, 0.95)',
         zIndex: 1000
       }}
@@ -121,7 +127,7 @@ const TimeControl = ({ selectedHour, selectedMinute = 0, onHourChange, onMinuteC
           display: 'flex', 
           justifyContent: 'center', 
           alignItems: 'center', 
-          mb: 1,
+          mb: isMobile ? 0.5 : 1,
           position: 'relative'
         }}>
           {isEditing ? (
@@ -139,21 +145,21 @@ const TimeControl = ({ selectedHour, selectedMinute = 0, onHourChange, onMinuteC
                 '& input': { 
                   textAlign: 'center',
                   fontWeight: 'bold',
-                  fontSize: '1.1rem'
+                  fontSize: isMobile ? '0.9rem' : '1.1rem'
                 }
               }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <AccessTimeIcon fontSize="small" color="primary" />
+                    <AccessTimeIcon fontSize={isMobile ? "small" : "medium"} color="primary" />
                   </InputAdornment>
                 ),
               }}
             />
           ) : (
-            <Tooltip title="Zamanı değiştirmek için çift tıklayın">
+            <Tooltip title={isMobile ? "" : "Zamanı değiştirmek için çift tıklayın"}>
               <Typography 
-                variant="h6" 
+                variant={isMobile ? "body1" : "h6"} 
                 sx={{ 
                   fontWeight: 'bold', 
                   color: '#1976d2',
@@ -164,7 +170,7 @@ const TimeControl = ({ selectedHour, selectedMinute = 0, onHourChange, onMinuteC
                 }}
                 onDoubleClick={handleDoubleClick}
               >
-                <AccessTimeIcon fontSize="small" />
+                <AccessTimeIcon fontSize={isMobile ? "small" : "medium"} />
                 {formatTimeString(selectedHour, selectedMinute)}
                 <IconButton 
                   size="small" 
@@ -184,26 +190,35 @@ const TimeControl = ({ selectedHour, selectedMinute = 0, onHourChange, onMinuteC
           min={0}
           max={1439} // 23 hours and 59 minutes (24*60 - 1)
           marks={marks}
-          valueLabelDisplay="auto"
+          valueLabelDisplay={isMobile ? "off" : "auto"}
           valueLabelFormat={formatSliderValueLabel}
           aria-labelledby="time-slider"
           sx={{ 
             '& .MuiSlider-thumb': { 
-              width: 16, 
-              height: 16,
+              width: isMobile ? 12 : 16, 
+              height: isMobile ? 12 : 16,
               '&:hover, &.Mui-focusVisible': {
                 boxShadow: '0px 0px 0px 8px rgba(25, 118, 210, 0.16)'
               }
             },
             '& .MuiSlider-valueLabel': {
               backgroundColor: '#1976d2'
+            },
+            '& .MuiSlider-mark': {
+              width: isMobile ? 2 : 4,
+              height: isMobile ? 2 : 4
+            },
+            '& .MuiSlider-markLabel': {
+              fontSize: isMobile ? '0.7rem' : '0.85rem'
             }
           }}
         />
         
-        <Typography variant="caption" sx={{ display: 'block', mt: 1, textAlign: 'center', color: 'text.secondary' }}>
-          Saati ve dakikayı değiştirmek için kaydırın veya zamanı çift tıklayarak düzenleyin
-        </Typography>
+        {!isMobile && (
+          <Typography variant="caption" sx={{ display: 'block', mt: 1, textAlign: 'center', color: 'text.secondary' }}>
+            Saati ve dakikayı değiştirmek için kaydırın veya zamanı çift tıklayarak düzenleyin
+          </Typography>
+        )}
       </Box>
     </Paper>
   );
